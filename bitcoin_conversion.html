@@ -1,0 +1,283 @@
+                                         <!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Bitcoin Conversion</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap');
+body {
+  zoom: 1.25;
+  -moz-transform: scale(1.25);
+  -moz-transform-origin: 0 0;
+  color:white;
+  font-family: 'Manrope', sans-serif;
+  font-weight:700;
+  background:linear-gradient(68.78deg,#100CFF -5.3%,#FFFFFF 124.36%);
+}
+a {
+  text-decoration:none;
+  color:white;
+  padding-left:5px;
+  padding-right:5px;
+}
+a:hover {
+  text-decoration:underline;
+}
+input {
+  text-align:center;
+  font-family: 'Manrope', sans-serif;
+  border-radius:9999px;
+  border:0px;
+  padding:10px;
+  font-size:17px;
+  width:150px;
+  outline: none;
+  padding:1em;
+}
+#dollars {
+  background:url(https://brewsbitcoin.com/dollar_symbol.png) no-repeat left center;
+  background-size:26px;
+  padding-left:26px;
+  background-color:white;
+}
+#sats {
+  background:url(https://brewsbitcoin.com/sats.png) no-repeat right center;
+  background-size:45px;
+  padding-right:50px;
+  background-color:white;
+}
+#btc {
+  background:url(https://brewsbitcoin.com/btc.png) no-repeat right center;
+  background-size:45px;
+  padding-right:50px;
+  background-color:white;  
+}
+#logo {
+  width:100px; margin-top:30px;
+}
+/* DESKTOP VIEW */
+@media (min-width: 600px) {
+  .hide-on-desktop {
+    display:none;
+  }
+  input {
+      max-width: 47%;
+  }
+}
+/* MOBILE VIEW */
+@media (max-width: 599px) {
+  .hide-on-mobile {
+    display:none;
+  }
+  input {
+    max-width: 97%;
+  }
+}
+.footer-message {
+  font-weight:500;
+  font-size:13px;
+  text-align:center;
+  margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+<center>
+
+<div style="margin-top:40px; margin-bottom:30px">
+<div style="margin-top:-30px; letter-spacing:.3px">Bitcoin Conversion</div>
+</div>
+
+    <input id="dollars" value="1.00">
+<div class="hide-on-desktop"></div>
+<span style="color:white; font-weight:300">=</span>
+<div class="hide-on-desktop"></div>
+<input id="sats" placeholder="sats">
+<div class="hide-on-desktop"></div>
+<span style="color:white; font-weight:300">=</span>
+<div class="hide-on-desktop"></div>
+        <input id="btc" placeholder="BTC">
+
+<script>
+var exchangeRate;
+const SATS_PER_BTC = 100000000;
+const maxBTC = 2099999997690000 / SATS_PER_BTC;
+
+function addCommas(input, decimalPlaces) {
+  if (decimalPlaces >= 0) {
+    return input.toFixed(decimalPlaces).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  } else {
+    return input.toLocaleString('en-US');
+  }
+}
+
+function changeSats(dollars) {
+   var sats = SATS_PER_BTC * dollars / exchangeRate;
+   $('#sats').val(addCommas(sats, 0));
+}
+
+function changeBTC(dollars) {
+   var btc = dollars / exchangeRate;
+   $('#btc').val(btc.toFixed(8)); // Display BTC with 8 decimal places
+}
+
+function changeDollars(sats) {
+   var dollars = sats * exchangeRate / SATS_PER_BTC;
+   $('#dollars').val(addCommas(dollars, 2));
+}
+
+function changeDollarsFromBTC(btc) {
+   var dollars = btc * exchangeRate;
+   $('#dollars').val(addCommas(dollars, 2));
+}
+
+function btcToSats(btc) {
+   var sats = btc * SATS_PER_BTC;
+   return sats;
+}
+
+function satsToBTC(sats) {
+   var btc = sats / SATS_PER_BTC;
+   return btc;
+}
+
+$('#sats').bind('keyup', function () {
+  var sats = $(this).val();
+  sats = parseInt(sats.replace(/,/g,''));
+
+  if (sats > maxBTC * SATS_PER_BTC) sats = maxBTC * SATS_PER_BTC;
+  if (sats < 0 || isNaN(sats)) {
+    $(this).val("");
+    $('#dollars').val("0.00");
+    $('#btc').val("");
+    return;
+  }
+
+  $(this).val(addCommas(sats, 0));
+  changeDollars(sats);
+  var btc = satsToBTC(sats);
+  $('#btc').val(btc.toFixed(8));
+  resizeInput();
+});
+
+$('#dollars').bind('keyup', function () {
+  var dollars = $(this).val();
+  dollars = parseFloat(dollars.replace(/,/g,''));
+
+  if (dollars > exchangeRate * maxBTC) {
+    dollars = exchangeRate * maxBTC;
+    $(this).val(dollars);
+  }
+
+  if (isNaN(dollars)) {
+    $('#sats').val("");
+    $('#btc').val("");
+  }
+
+  if (dollars < 0 || isNaN(dollars)) {
+    $(this).val("");
+    $('#sats').val("");
+    $('#btc').val("");
+    return;
+  }
+
+  changeSats(dollars);
+  var btc = dollars / exchangeRate;
+  $('#btc').val(btc.toFixed(8));
+  resizeInput();
+});
+
+$('#btc').bind('input', function () {
+  var btc = $(this).val();
+
+  // Handle leading zeros and decimal point
+  if (btc.startsWith('.')) {
+    btc = '0' + btc;
+  } else if (btc.startsWith('0') && !btc.startsWith('0.')) {
+    btc = btc.substring(1);
+  }
+
+  btc = btc.replace(/[^\d.]/g, ''); // Only allow numbers and dots
+
+  // Limit to 8 decimal places
+  var decimalIndex = btc.indexOf('.');
+  if (decimalIndex !== -1 && btc.substring(decimalIndex + 1).length > 8) {
+    btc = btc.substring(0, decimalIndex + 9);
+  }
+
+  $(this).val(btc); // Set the value without fixed decimal places
+
+  btc = parseFloat(btc);
+
+  if (btc > maxBTC) btc = maxBTC;
+  if (btc < 0 || isNaN(btc)) {
+    $(this).val("");
+    $('#dollars').val("0.00");
+    $('#sats').val("");
+    return;
+  }
+
+  changeDollarsFromBTC(btc);
+  var sats = btcToSats(btc);
+  $('#sats').val(addCommas(sats, 0));
+  resizeInput();
+});
+
+$('input').focus(function() {
+  $(this).select();
+});
+
+function resizeInput() {
+  $('input').each(function() {
+    var length = $(this).val().length;
+    var newLength = length * 9;
+    if (newLength > 98) {
+      $(this).width(newLength);
+    } else {
+      $(this).width(83);
+    }
+  });
+  if ($('#dollars').width() > $('#sats').width()) {
+    $('#sats').width($('#dollars').width() - 24);
+  } else {
+    $('#dollars').width($('#sats').width() + 24);
+  }
+  if ($('#btc').width() > $('#dollars').width()) {
+    $('#dollars').width($('#btc').width() - 24);
+  } else {
+    $('#btc').width($('#dollars').width() + 24);
+  }
+}
+
+function updateExchangeRate() {
+  const d = new Date();
+  let time = d.getTime();
+  $.getJSON("https://api.coindesk.com/v1/bpi/currentprice/usd.json", function(data) {
+     exchangeRate = Number(data.bpi.USD.rate_float);
+     console.log(exchangeRate);
+  });
+  setTimeout(updateExchangeRate, 1000 * 100);
+}
+
+function startHere() {
+    $.getJSON("https://api.coindesk.com/v1/bpi/currentprice/usd.json", function(data) {
+       exchangeRate = Number(data.bpi.USD.rate_float);
+       console.log(exchangeRate);
+       changeSats(1);   
+                  changeBTC(1);
+    });
+    setTimeout(updateExchangeRate, 1000 * 100);
+}
+
+startHere();
+            </script>
+
+<div class="footer-message">This was heavily borrowed from <a href="https://satsdash.com">SatsDash by D++</a></div> 
+
+You can grab a copy of this webpage on <a href="https://github.com/dme1sc/bitcoin_conversion">github</a>.
+
+</body>
+</html>
