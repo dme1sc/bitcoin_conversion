@@ -255,22 +255,48 @@ function resizeInput() {
 function updateExchangeRate() {
   const d = new Date();
   let time = d.getTime();
-  $.getJSON("https://api.coindesk.com/v1/bpi/currentprice/usd.json", function(data) {
-     exchangeRate = Number(data.bpi.USD.rate_float);
-     console.log(exchangeRate);
+  $.getJSON("https://api.binance.us/api/v3/ticker/price", {
+    symbol: 'BTCUSDT'
+  }, function(data) {
+    exchangeRate = Number(data.price);
+    console.log(exchangeRate);
   });
   setTimeout(updateExchangeRate, 1000 * 100);
 }
+  
+//function updateExchangeRate() {
+//  const d = new Date();
+//  let time = d.getTime();
+//  $.getJSON("https://api.coindesk.com/v1/bpi/currentprice/usd.json", function(data) {
+//  $.getJSON("https://api.binance.us/api/v3/ticker/price/usd.json", function(data) {
+//     exchangeRate = Number(data.bpi.USD.rate_float);
+//     console.log(exchangeRate);
+//  });
+//  setTimeout(updateExchangeRate, 1000 * 100);
+//}
 
 function startHere() {
-    $.getJSON("https://api.coindesk.com/v1/bpi/currentprice/usd.json", function(data) {
-       exchangeRate = Number(data.bpi.USD.rate_float);
-       console.log(exchangeRate);
-       changeSats(1);   
-                  changeBTC(1);
-    });
-    setTimeout(updateExchangeRate, 1000 * 100);
+  $.getJSON("https://api.binance.us/api/v3/ticker/price", {
+    symbol: 'BTCUSDT'
+  }, function(data) {
+    exchangeRate = Number(data.price);
+    console.log(exchangeRate);
+    changeSats(1);   
+    changeBTC(1);
+  });
+  setTimeout(updateExchangeRate, 1000 * 100);
 }
+  
+//function startHere() {
+//    $.getJSON("https://api.coindesk.com/v1/bpi/currentprice/usd.json", function(data) {
+//    $.getJSON("https://api.binance.us/api/v3/ticker/price/usd.json", function(data) {
+//       exchangeRate = Number(data.bpi.USD.rate_float);
+//       console.log(exchangeRate);
+//       changeSats(1);   
+//                  changeBTC(1);
+//    });
+//    setTimeout(updateExchangeRate, 1000 * 100);
+//}
 
 startHere();
             </script>
