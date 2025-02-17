@@ -4,7 +4,7 @@
 <title>Bitcoin Conversion</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+//<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap');
 body {
@@ -253,23 +253,25 @@ function resizeInput() {
 }
 
 function updateExchangeRate() {
-  const d = new Date();
-  let time = d.getTime();
-  $.getJSON("https://api.coindesk.com/v1/bpi/currentprice/usd.json", function(data) {
-     exchangeRate = Number(data.bpi.USD.rate_float);
-     console.log(exchangeRate);
-  });
+  fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd')
+    .then(response => response.json())
+    .then(data => {
+      exchangeRate = data.bitcoin.usd;
+      console.log(exchangeRate);
+    });
   setTimeout(updateExchangeRate, 1000 * 100);
 }
 
 function startHere() {
-    $.getJSON("https://api.coindesk.com/v1/bpi/currentprice/usd.json", function(data) {
-       exchangeRate = Number(data.bpi.USD.rate_float);
-       console.log(exchangeRate);
-       changeSats(1);   
-                  changeBTC(1);
+  fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd')
+    .then(response => response.json())
+    .then(data => {
+      exchangeRate = data.bitcoin.usd;
+      console.log(exchangeRate);
+      changeSats(1);   
+      changeBTC(1);
     });
-    setTimeout(updateExchangeRate, 1000 * 100);
+  setTimeout(updateExchangeRate, 1000 * 100);
 }
 
 startHere();
